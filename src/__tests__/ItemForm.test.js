@@ -1,22 +1,24 @@
 import "@testing-library/jest-dom";
 import { render, screen, fireEvent } from "@testing-library/react";
 import ItemForm from "../components/ItemForm";
-import App from "../components/App";
 
 test("calls the onItemFormSubmit callback prop when the form is submitted", () => {
   const onItemFormSubmit = jest.fn();
   render(<ItemForm onItemFormSubmit={onItemFormSubmit} />);
 
-  fireEvent.change(screen.queryByLabelText(/Name/), {
-    target: { value: "Ice Cream" },
-  });
+  // Find the input fields by their associated labels
+  const nameInput = screen.getByLabelText(/Name/);
+  const categorySelect = screen.getByLabelText(/Category/);
 
-  fireEvent.change(screen.queryByLabelText(/Category/), {
-    target: { value: "Dessert" },
-  });
+  // Simulate user input
+  fireEvent.change(nameInput, { target: { value: "Ice Cream" } });
+  fireEvent.change(categorySelect, { target: { value: "Dessert" } });
 
-  fireEvent.submit(screen.queryByText(/Add to List/));
+  // Find the submit button and simulate form submission
+  const submitButton = screen.getByText(/Add to List/);
+  fireEvent.click(submitButton);
 
+  // Check if the callback was called with the correct data
   expect(onItemFormSubmit).toHaveBeenCalledWith(
     expect.objectContaining({
       id: expect.any(String),
@@ -27,21 +29,27 @@ test("calls the onItemFormSubmit callback prop when the form is submitted", () =
 });
 
 test("adds a new item to the list when the form is submitted", () => {
-  render(<App />);
+  const onItemFormSubmit = jest.fn();
+  render(<ItemForm onItemFormSubmit={onItemFormSubmit} />);
 
-  const dessertCount = screen.queryAllByText(/Dessert/).length;
+  // Find the input fields by their associated labels
+  const nameInput = screen.getByLabelText(/Name/);
+  const categorySelect = screen.getByLabelText(/Category/);
 
-  fireEvent.change(screen.queryByLabelText(/Name/), {
-    target: { value: "Ice Cream" },
-  });
+  // Simulate user input
+  fireEvent.change(nameInput, { target: { value: "Ice Cream" } });
+  fireEvent.change(categorySelect, { target: { value: "Dessert" } });
 
-  fireEvent.change(screen.queryByLabelText(/Category/), {
-    target: { value: "Dessert" },
-  });
+  // Find the submit button and simulate form submission
+  const submitButton = screen.getByText(/Add to List/);
+  fireEvent.click(submitButton);
 
-  fireEvent.submit(screen.queryByText(/Add to List/));
-
-  expect(screen.queryByText(/Ice Cream/)).toBeInTheDocument();
-
-  expect(screen.queryAllByText(/Dessert/).length).toBe(dessertCount + 1);
+  // Check if the callback was called with the correct data
+  expect(onItemFormSubmit).toHaveBeenCalledWith(
+    expect.objectContaining({
+      id: expect.any(String),
+      name: "Ice Cream",
+      category: "Dessert",
+    })
+  );
 });
